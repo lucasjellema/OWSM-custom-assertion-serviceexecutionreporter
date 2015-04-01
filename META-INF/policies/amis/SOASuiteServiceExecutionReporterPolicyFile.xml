@@ -1,0 +1,44 @@
+<wsp:Policy xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
+            xmlns:custom="nl.amis/ExcutionReporterPolicy"
+            orawsp:status="enabled"
+            xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            orawsp:category="management" orawsp:attachTo="binding.client"
+            wsu:Id="soasuite-executor-reporting_policy"
+            xmlns:orawsp="http://schemas.oracle.com/ws/2006/01/policy"
+            wsp:Name="amis/monitoring" wsp:description="This policy reports on service execution to a custom configured JMS Destination for monitoring purposes.">
+  <custom:serviceExecutionReporter orawsp:Silent="true" orawsp:Enforced="true"
+                          orawsp:name="Service Execution Reporter"
+                          orawsp:category="management/custom">
+    <orawsp:bindings>
+      <orawsp:Implementation>nl.amis.wspolicy.SOASuiteServiceExecutionReporter</orawsp:Implementation>
+      <orawsp:Config orawsp:configType="declarative"
+                     orawsp:name="service-execution-reporting">
+        <orawsp:PropertySet orawsp:name="report-config">
+          <orawsp:Property orawsp:contentType="optional"
+                           orawsp:name="JMSDestination" orawsp:type="string">
+            <orawsp:Value>jms/somewhere</orawsp:Value>
+          </orawsp:Property>
+          <orawsp:Property orawsp:contentType="optional" orawsp:name="operationsMap"
+                           orawsp:type="string">
+            <orawsp:Value>
+  {"getFlightDetailsRequest": {"operation": "getFlightDetails", "oneWay":"false"
+                               ,"xpath": "/soap:Envelope/soap:Body/flig:getFlightDetailsRequest/flig:FlightCode/com:CarrierCode"
+                               , "namespaces": [{"prefix":"soap","namespace":"http://schemas.xmlsoap.org/soap/envelope/"  },{"prefix":"flig","namespace":"com.flyinghigh/operations/flightservice"  },{"prefix":"com","namespace":"com.flyinghigh/operations/common"  }
+                                               ]
+                             }
+   ,"retrievePassengerListForFlightRequest": {"operation": "retrievePassengerListForFlight", "oneWay":"false"
+                               ,"xpath": "/soap:Envelope/soap:Body/flig:retrievePassengerListForFlightRequest/flig:FlightCode/com:CarrierCode"
+                               , "namespaces": [{"prefix":"soap","namespace":"http://schemas.xmlsoap.org/soap/envelope/"  }
+                                               ,{"prefix":"flig","namespace":"com.flyinghigh/operations/flightservice"  }
+                                               ,{"prefix":"com","namespace":"com.flyinghigh/operations/common"  }
+                                               ]
+                             }
+   
+   }                          </orawsp:Value>
+          </orawsp:Property>
+        </orawsp:PropertySet>
+      </orawsp:Config>
+    </orawsp:bindings>
+  </custom:serviceExecutionReporter>
+</wsp:Policy>

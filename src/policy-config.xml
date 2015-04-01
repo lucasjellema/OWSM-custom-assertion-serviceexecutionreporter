@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<policy-config>
+    <policy-model-config>
+        <entry>
+           <key namespace="nl.amis/ExcutionReporterPolicy" elementName="serviceExecutionReporter"/>
+           <executor-classname>nl.amis.wspolicy.SOASuiteServiceExecutionReporter</executor-classname>
+        </entry>
+    </policy-model-config>
+</policy-config>
+
