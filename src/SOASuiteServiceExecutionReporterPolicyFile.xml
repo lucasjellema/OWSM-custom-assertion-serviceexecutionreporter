@@ -16,8 +16,12 @@
                      orawsp:name="service-execution-reporting">
         <orawsp:PropertySet orawsp:name="report-config">
           <orawsp:Property orawsp:contentType="optional"
+                           orawsp:name="JMSConnectionFactory" orawsp:type="string">
+            <orawsp:Value>jms/someConnectionFactory</orawsp:Value>
+          </orawsp:Property>
+          <orawsp:Property orawsp:contentType="optional"
                            orawsp:name="JMSDestination" orawsp:type="string">
-            <orawsp:Value>jms/somewhere</orawsp:Value>
+            <orawsp:Value>jms/someJMSQueueOrTopic</orawsp:Value>
           </orawsp:Property>
           <orawsp:Property orawsp:contentType="optional" orawsp:name="operationsMap"
                            orawsp:type="string">

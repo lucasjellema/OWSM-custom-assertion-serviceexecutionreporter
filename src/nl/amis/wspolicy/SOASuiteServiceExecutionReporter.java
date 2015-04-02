@@ -5,6 +5,10 @@ import java.io.StringReader;
 import java.util.Date;
 import java.util.HashMap;
 
+import java.util.Map;
+
+import javax.jms.JMSException;
+
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -40,6 +44,12 @@ public class SOASuiteServiceExecutionReporter extends CustomAssertion {
         String serviceId = "";
         String payloadValue = "";
         String timestamp = "";
+        String jmsDestination = null;
+        String jmsConnectionFactory = null;
+
+
+        jmsDestination = super.getPolicyBindingProperty("JMSDestination");
+        jmsConnectionFactory = super.getPolicyBindingProperty("JMSConnectionFactory");
 
         IMessageContext.STAGE stage = ((IMessageContext) iContext).getStage();
         SOAPBody mBody = null;
@@ -141,7 +151,21 @@ public class SOASuiteServiceExecutionReporter extends CustomAssertion {
 
         }
 
-
+        if (jmsDestination != null && jmsConnectionFactory != null) {
+            Map<String, String> message = new HashMap<String, String>();
+            message.put("service", serviceId);
+            message.put("operation", operationName);
+            message.put("stage", stage.toString());
+            message.put("payload", payloadValue);
+            message.put("timestamp", timestamp);
+            message.put("ecid", ecid);
+            try {
+                new JMSPostman().publishMapToJMS(jmsConnectionFactory, jmsDestination, message);
+            } catch (JMSException e) {
+                System.out.println("Failed to publish to JMS: "+e.getMessage());
+                e.printStackTrace();
+            }
+        }
         if (stage == IMessageContext.STAGE.request) {
             System.out.println("Service Execution Report");
             System.out.println("========================");
