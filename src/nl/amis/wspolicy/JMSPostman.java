@@ -25,16 +25,12 @@ public class JMSPostman {
     private QueueSession qsession;
 
     public void publishMapToJMS(String jmsConnectionFactory, String jmsDestination,
-                                 Map<String, String> message) throws javax.jms.JMSException {
+                                Map<String, String> message, String correlationId) throws javax.jms.JMSException {
         //JMS publication
         try {
             Context jndiContext = null;
-            try {
-                jndiContext = new InitialContext();
-            } catch (NamingException e) {
-                System.out.println("Could not create JNDI API " + "context: " + e.toString());
-                System.exit(1);
-            }
+            jndiContext = new InitialContext();
+
             /*
     * Look up connection factory and destination. If either
     * does not exist, exit. If you look up a
@@ -43,13 +39,8 @@ public class JMSPostman {
     */
             QueueConnectionFactory connectionFactory = null;
             Destination dest = null;
-            try {
-                connectionFactory = (QueueConnectionFactory) jndiContext.lookup(jmsConnectionFactory);
-                dest = (Destination) jndiContext.lookup(jmsDestination);
-            } catch (Exception e) {
-                System.out.println("JNDI API lookup failed: " + e.toString());
-                e.printStackTrace();
-            }
+            connectionFactory = (QueueConnectionFactory) jndiContext.lookup(jmsConnectionFactory);
+            dest = (Destination) jndiContext.lookup(jmsDestination);
 
             // javax.jms.Connection connection = connectionFactory.createConnection();
             qcon = connectionFactory.createQueueConnection();
@@ -57,16 +48,24 @@ public class JMSPostman {
             //qsender = qsession.createSender((javax.jms.Queue) dest);
             qcon.start();
             MapMessage mm = qsession.createMapMessage();
-            
+
             // copy the contents from the message (a Map object) to the MapMessage mm
             Iterator it = message.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry pair = (Map.Entry) it.next();
                 mm.setString((String) pair.getKey(), (String) pair.getValue());
             }
-
+            mm.setJMSCorrelationID(correlationId);
+            mm.setJMSType("ServiceExecutionReport");
             MessageProducer producer = qsession.createProducer(dest);
             producer.send(mm);
+
+        } catch (NamingException e) {
+            System.out.println("Could not create JNDI API " + "context: " + e.toString());
+            System.exit(1);
+        } catch (Exception e) {
+            System.out.println("JNDI API lookup failed: " + e.toString());
+            e.printStackTrace();
         } finally {
             if (qcon != null) {
                 try {

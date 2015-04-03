@@ -4,12 +4,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.xml.namespace.NamespaceContext;
+import javax.xml.soap.SOAPBody;
+import javax.xml.soap.SOAPHeader;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import oracle.wsm.common.sdk.IContext;
+import oracle.wsm.common.sdk.IMessageContext;
+import oracle.wsm.common.sdk.SOAPBindingMessageContext;
 import oracle.wsm.policy.model.IAssertion;
 import oracle.wsm.policy.model.IAssertionBindings;
 import oracle.wsm.policy.model.IConfig;
@@ -38,6 +42,7 @@ public abstract class CustomAssertion extends AssertionExecutor {
     protected IAssertion mAssertion = null;
     protected IExecutionContext mEcontext = null;
     protected oracle.wsm.common.sdk.IContext mIcontext = null;
+    final HashMap<String, String> soapNamespaces = new HashMap<String, String>();
 
     /**
      * A tag or text to display when printing debug information to identify the
@@ -51,6 +56,7 @@ public abstract class CustomAssertion extends AssertionExecutor {
     public CustomAssertion(String tag) {
         super();
         mTag = tag;
+        soapNamespaces.put("soap", "http://schemas.xmlsoap.org/soap/envelope/");
     } // CustomAssertion()
 
     /**
@@ -72,11 +78,34 @@ public abstract class CustomAssertion extends AssertionExecutor {
 
 
     public String getPolicyBindingProperty(String propertyName) {
+    String propertyValue=null;
+        try {
         IAssertionBindings bindings = ((SimpleAssertion) (this.mAssertion)).getBindings();
         IConfig config = bindings.getConfigs().get(0);
         IPropertySet propertyset = config.getPropertySets().get(0);
-        String propertyValue = propertyset.getPropertyByName(propertyName).getValue();
+        propertyValue = propertyset.getPropertyByName(propertyName).getValue();
+        } catch(Exception e) {
+            System.out.println("Exceptio in getPolicyBindingProperty"+e.getMessage());
+        }
         return propertyValue;
+    }
+
+    public String getMessageType(IContext iContext) {
+        String messageType="";
+        SOAPBindingMessageContext smc = ((SOAPBindingMessageContext) iContext);
+            
+        System.out.println("start investigating message nodes");
+        try {
+            
+            Node messageNode = getDataNode(((IMessageContext) iContext).getStage()== IMessageContext.STAGE.request?  smc.getRequestMessage().getSOAPBody():smc.getResponseMessage().getSOAPBody()
+                                           , soapNamespaces, "/soap:Envelope/soap:Body/*[1]");
+            messageType = messageNode.getLocalName();
+            System.out.println("Message Type = " + messageType);
+        } catch (Exception e) {
+            System.out.println("exception in bepaling messageNode " + e.getMessage());
+            e.printStackTrace();
+        }
+return messageType;
     }
 
     /**

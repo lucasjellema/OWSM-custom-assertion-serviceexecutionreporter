@@ -1,40 +1,6 @@
-<wsp:Policy xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
-            xmlns:custom="nl.amis/ExcutionReporterPolicy"
-            orawsp:status="enabled" orawsp:description="This policy reports on service execution to a custom configured JMS Destination for monitoring purposes." 
-            orawsp:displayName="Service Execution Reporter"
-            orawsp:local-optimization="off"
-            xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            orawsp:category="management" orawsp:attachTo="binding.server"
-            wsu:Id="soasuite-executor-reporting_policy" 
-            xmlns:orawsp="http://schemas.oracle.com/ws/2006/01/policy"
-            wsp:Name="amis/monitoring" wsp:description="This policy reports on service execution to a custom configured JMS Destination for monitoring purposes.">
-  <custom:serviceExecutionReporter orawsp:Silent="true" orawsp:Enforced="true"
-                          orawsp:name="Service Execution Reporter"
-                          orawsp:category="management/custom">
-    <orawsp:bindings>
-      <orawsp:Implementation>nl.amis.wspolicy.SOASuiteServiceExecutionReporter</orawsp:Implementation>
-      <orawsp:Config orawsp:configType="declarative"
-                     orawsp:name="service-execution-reporting">
-        <orawsp:PropertySet orawsp:name="report-config">
-          <orawsp:Property orawsp:contentType="optional"
-                           orawsp:name="JMSConnectionFactory" orawsp:type="string">
-            <orawsp:Value>jms/ServiceExecutionReportingCF</orawsp:Value>
-          </orawsp:Property>
-          <orawsp:Property orawsp:contentType="optional"
-                           orawsp:name="JMSDestination" orawsp:type="string">
-            <orawsp:Value>jms/ServiceExecutionReportingQueue</orawsp:Value>
-          </orawsp:Property>
-          <orawsp:Property orawsp:contentType="optional"
-                           orawsp:name="serviceAttribute" orawsp:type="string">
-            <orawsp:Value></orawsp:Value>
-          </orawsp:Property>
-          <orawsp:Property orawsp:contentType="optional" orawsp:name="operationsMap"
-                           orawsp:type="string">
-            <orawsp:Value>
-{     "getFlightDetailsRequest" : {
+{
+    "getFlightDetailsRequest" : {
         "operation" : "getFlightDetails",
-        "operationAttribute": "retrieve details for flight",
         "oneWay" : "false",
         "request" : {
             "doReport" : "true",
@@ -103,7 +69,6 @@
     },
     "retrievePassengerListForFlightRequest" : {
         "operation" : "retrievePassengerListForFlight",
-        "operationAttribute": "X-rated operation",
         "oneWay" : "false",
         "request" : {
             "doReport" : "true",
@@ -132,10 +97,4 @@
             "doReport" : "true"
         }
     }
-} </orawsp:Value>
-          </orawsp:Property>
-        </orawsp:PropertySet>
-      </orawsp:Config>
-    </orawsp:bindings>
-  </custom:serviceExecutionReporter>
-</wsp:Policy>
+}
