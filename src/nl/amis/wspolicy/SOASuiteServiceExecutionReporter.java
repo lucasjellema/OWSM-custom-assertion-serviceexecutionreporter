@@ -47,13 +47,11 @@ public class SOASuiteServiceExecutionReporter extends CustomAssertion {
 
     @Override
     public void init(IAssertion iAssertion, IExecutionContext iExecutionContext, IContext iContext) {
-        // TODO Implement this method
         super.init(iAssertion, iExecutionContext, iContext);
         settings.setJmsDestination(super.getPolicyBindingProperty("JMSDestination"));
         settings.setJmsConnectionFactory(super.getPolicyBindingProperty("JMSConnectionFactory"));
         settings.setServiceAttribute(super.getPolicyBindingProperty("serviceAttribute"));
         settings.initializeMessageTypesMapFromJson(super.getPolicyBindingProperty("operationsMap"));
-
     }
 
     public void test() {
@@ -131,14 +129,11 @@ public class SOASuiteServiceExecutionReporter extends CustomAssertion {
     public IResult execute(IContext iContext) throws WSMException {
         System.out.println("Reporting for duty: SOASuiteServiceExecutionReporter");
         IResult result = new Result();
-
         String operationName = "";
-        String operationAttribute = null;
         String ecid = "";
         String serviceId = "";
         Map<String, String> payloadValues = new HashMap<String, String>();
         String timestamp = "";
-
 
         serviceId = ((IMessageContext) iContext).getServiceID();
         ecid = ((IMessageContext) iContext).getGUID().toString();
@@ -269,6 +264,51 @@ class ServiceReporterSettings {
     private String jmsDestination = null;
     private String jmsConnectionFactory = null;
     private String serviceAttribute = null;
+    private Map<String, MessageTypeConfiguration> messageTypesMap = new HashMap<String, MessageTypeConfiguration>();
+
+    public void initializeMessageTypesMapFromJson(String json) {
+        try {
+            JsonReader rdr = Json.createReader(new StringReader(json));
+            JsonObject obj = rdr.readObject();
+            for (Map.Entry<String, JsonValue> entry : obj.entrySet()) {
+                MessageTypeConfiguration mtc = new MessageTypeConfiguration();
+                String messageType = entry.getKey();
+                messageTypesMap.put(messageType, mtc);
+                JsonObject operationObj = obj.getJsonObject(messageType);
+                String operationName = operationObj.getString("operation");
+                String operationAttribute = operationObj.getString("operationAttribute");
+                mtc.setOperationAttribute(operationAttribute);
+                mtc.setOperationName(operationName);
+                JsonObject messageObj = operationObj.getJsonObject("request");
+                // process definition for request|response|fault into MessageConfiguration
+                MessageConfiguration mc = new MessageConfiguration();
+                mtc.setRequest(mc);
+                if (messageObj != null) {
+                    String doReport = messageObj.getString("doReport");
+                    JsonArray payload = messageObj.getJsonArray("payload");
+                    for (JsonObject ple : payload.getValuesAs(JsonObject.class)) {
+                        PayloadElement pe = new PayloadElement();
+                        mc.getPayload().add(pe);
+                        String name = ple.getString("name");
+                        String xpathStr = ple.getString("xpath");
+                        pe.setName(name);
+                        pe.setXpath(xpathStr);
+                        JsonArray results = ple.getJsonArray("namespaces");
+                        for (JsonObject ns : results.getValuesAs(JsonObject.class)) {
+                            pe.getNamespaces().put(ns.getString("prefix"), ns.getString("namespace"));
+                        } //for
+                    } //for
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public Map<String, MessageTypeConfiguration> getMessageTypesMap() {
+        return messageTypesMap;
+    }
 
     public void setServiceAttribute(String serviceAttribute) {
         this.serviceAttribute = serviceAttribute;
@@ -277,77 +317,6 @@ class ServiceReporterSettings {
     public String getServiceAttribute() {
         return serviceAttribute;
     }
-    private Map<String, MessageTypeConfiguration> messageTypesMap = new HashMap<String, MessageTypeConfiguration>();
-
-
-    public Map<String, MessageTypeConfiguration> getMessageTypesMap() {
-        return messageTypesMap;
-    }
-
-    public void initializeMessageTypesMapFromJson(String json) {
-        try {
-            JsonReader rdr = Json.createReader(new StringReader(json));
-            System.out.println("reader");
-            JsonObject obj = rdr.readObject();
-            System.out.println("json obj" + obj);
-            //            System.out.println("get object from operations map for " + messageType);
-            for (Map.Entry<String, JsonValue> entry : obj.entrySet()) {
-                MessageTypeConfiguration mtc = new MessageTypeConfiguration();
-                String messageType = entry.getKey();
-                messageTypesMap.put(messageType, mtc);
-
-
-                JsonObject operationObj = obj.getJsonObject(messageType);
-                System.out.println("operation object = " + operationObj);
-
-                String operationName = operationObj.getString("operation");
-                String operationAttribute = operationObj.getString("operationAttribute");
-                mtc.setOperationAttribute(operationAttribute);
-                System.out.println("Operation = " + operationName);
-                mtc.setOperationName(operationName);
-                JsonObject messageObj = operationObj.getJsonObject("request");
-
-                // process definition for request|response|fault into MessageConfiguration
-                MessageConfiguration mc = new MessageConfiguration();
-                mtc.setRequest(mc);
-                if (messageObj != null) {
-
-                    String doReport = messageObj.getString("doReport");
-
-                    JsonArray payload = messageObj.getJsonArray("payload");
-
-                    System.out.println("payload array contains : " + payload.size() + " payloadelements");
-
-                    for (JsonObject ple : payload.getValuesAs(JsonObject.class)) {
-                        PayloadElement pe = new PayloadElement();
-                        System.out.println("ple" + ple.toString());
-                        mc.getPayload().add(pe);
-                        String name = ple.getString("name");
-                        String xpathStr = ple.getString("xpath");
-                        pe.setName(name);
-                        pe.setXpath(xpathStr);
-
-                        JsonArray results = ple.getJsonArray("namespaces");
-                        System.out.println("results array contains : " + results.size() + " namespaces");
-                        for (JsonObject ns : results.getValuesAs(JsonObject.class)) {
-                            System.out.println("add namespace: " + ns.getString("prefix") + ":" +
-                                               ns.getString("namespace") + "  ;;");
-
-                            pe.getNamespaces().put(ns.getString("prefix"), ns.getString("namespace"));
-                        } //for
-                    } //for
-
-
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println(e.getMessage());
-        }
-
-    }
-
 
     public void setJmsDestination(String jmsDestination) {
         this.jmsDestination = jmsDestination;
@@ -376,6 +345,10 @@ class ServiceReporterSettings {
 class MessageTypeConfiguration {
     String operationName;
     String operationAttribute;
+    Boolean oneWay;
+    MessageConfiguration request;
+    MessageConfiguration response;
+    MessageConfiguration fault;
 
     public void setOperationAttribute(String operationAttribute) {
         this.operationAttribute = operationAttribute;
@@ -384,10 +357,6 @@ class MessageTypeConfiguration {
     public String getOperationAttribute() {
         return operationAttribute;
     }
-    Boolean oneWay;
-    MessageConfiguration request;
-    MessageConfiguration response;
-    MessageConfiguration fault;
 
     public void setOperationName(String operationName) {
         this.operationName = operationName;

@@ -1,12 +1,12 @@
-{
-    "getFlightDetailsRequest" : {
+{     "getFlightDetailsRequest" : {
         "operation" : "getFlightDetails",
+        "operationAttribute": "retrieve details for flight",
         "oneWay" : "false",
         "request" : {
             "doReport" : "true",
             "payload" : [
                 {
-                    "name" : "carrierCode",
+                    "name" : "businessAttribute1",
                     "xpath" : "/soap:Envelope/soap:Body/flig:getFlightDetailsRequest/flig:FlightCode/com:CarrierCode",
                     "namespaces" : [
                         {
@@ -24,8 +24,26 @@
                     ]
                 },
                 {
-                    "name" : "flightNumber",
+                    "name" : "businessAttribute2",
                     "xpath" : "/soap:Envelope/soap:Body/flig:getFlightDetailsRequest/flig:FlightCode/com:FlightNumber",
+                    "namespaces" : [
+                        {
+                            "prefix" : "soap",
+                            "namespace" : "http://schemas.xmlsoap.org/soap/envelope/"
+                        },
+                        {
+                            "prefix" : "flig",
+                            "namespace" : "com.flyinghigh/operations/flightservice"
+                        },
+                        {
+                            "prefix" : "com",
+                            "namespace" : "com.flyinghigh/operations/common"
+                        }
+                    ]
+                },
+                {
+                    "name" : "businessAttribute3",
+                    "xpath" : "/soap:Envelope/soap:Body/flig:getFlightDetailsRequest/flig:FlightDate",
                     "namespaces" : [
                         {
                             "prefix" : "soap",
@@ -47,7 +65,7 @@
             "doReport" : "true",
             "payload" : [
                 {
-                    "name" : "flightStatus",
+                    "name" : "businessAttribute3",
                     "xpath" : "/soap:Envelope/soap:Body/flig:getFlightDetailsResponse/flig:FlightStatus",
                     "namespaces" : [
                         {
@@ -69,12 +87,13 @@
     },
     "retrievePassengerListForFlightRequest" : {
         "operation" : "retrievePassengerListForFlight",
+        "operationAttribute": "X-rated operation",
         "oneWay" : "false",
         "request" : {
             "doReport" : "true",
             "payload" : [
                 {
-                    "name" : "carrierCode",
+                    "name" : "businessAttribute1",
                     "xpath" : "/soap:Envelope/soap:Body/flig:retrievePassengerListForFlightRequest/flig:FlightCode/com:CarrierCode",
                     "namespaces" : [
                         {
@@ -96,5 +115,73 @@
         "response" : {
             "doReport" : "true"
         }
+    },
+    "sendFlightStatusUpdateRequest" : {
+        "operation" : "sendFlightStatusUpdate",
+        "operationAttribute": "Gate reports to control center",
+        "oneWay" : "false",
+        "request" : {
+            "doReport" : "true",
+            "payload" : [
+                {
+                    "name" : "businessAttribute1",
+                    "xpath" : "/soap:Envelope/soap:Body/flig:sendFlightStatusUpdateRequest/flig:FlightCode/com:CarrierCode",
+                    "namespaces" : [
+                        {
+                            "prefix" : "soap",
+                            "namespace" : "http://schemas.xmlsoap.org/soap/envelope/"
+                        },
+                        {
+                            "prefix" : "flig",
+                            "namespace" : "com.flyinghigh/operations/flightservice"
+                        },
+                        {
+                            "prefix" : "com",
+                            "namespace" : "com.flyinghigh/operations/common"
+                        }
+                    ]
+                },
+                {
+                    "name" : "businessAttribute2",
+                    "xpath" : "/soap:Envelope/soap:Body/flig:sendFlightStatusUpdateRequest/flig:FlightCode/com:FlightNumber",
+                    "namespaces" : [
+                        {
+                            "prefix" : "soap",
+                            "namespace" : "http://schemas.xmlsoap.org/soap/envelope/"
+                        },
+                        {
+                            "prefix" : "flig",
+                            "namespace" : "com.flyinghigh/operations/flightservice"
+                        },
+                        {
+                            "prefix" : "com",
+                            "namespace" : "com.flyinghigh/operations/common"
+                        }
+                    ]
+                },
+                {
+                    "name" : "businessAttribute3",
+                    "xpath" : "/soap:Envelope/soap:Body/flig:sendFlightStatusUpdateRequest/flig:FlightStatus",
+                    "namespaces" : [
+                        {
+                            "prefix" : "soap",
+                            "namespace" : "http://schemas.xmlsoap.org/soap/envelope/"
+                        },
+                        {
+                            "prefix" : "flig",
+                            "namespace" : "com.flyinghigh/operations/flightservice"
+                        },
+                        {
+                            "prefix" : "com",
+                            "namespace" : "com.flyinghigh/operations/common"
+                        }
+                    ]
+                }
+            ]
+        },
+        "response" : {
+            "doReport" : "true"
+        }
     }
+
 }
